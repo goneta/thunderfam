@@ -1,0 +1,259 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Google Fonts ─────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+/* ─── Design Tokens ─────────────────────────────────────────────────── */
+@theme inline {
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  /* Brand palette */
+  --color-gold:        oklch(78% 0.13 85);
+  --color-gold-light:  oklch(90% 0.08 85);
+  --color-gold-dark:   oklch(60% 0.12 75);
+  --color-navy:        oklch(18% 0.04 260);
+  --color-navy-light:  oklch(25% 0.05 260);
+  --color-charcoal:    oklch(22% 0.02 260);
+  --color-smoke:       oklch(96% 0.005 260);
+  --color-ivory:       oklch(98% 0.005 85);
+
+  /* Google brand accent colors */
+  --color-g-blue:      oklch(56% 0.19 258);
+  --color-g-red:       oklch(52% 0.22 25);
+  --color-g-yellow:    oklch(80% 0.17 85);
+  --color-g-green:     oklch(56% 0.17 145);
+
+  /* Semantic */
+  --color-background:  oklch(98% 0.005 85);
+  --color-foreground:  oklch(18% 0.04 260);
+  --color-card:        oklch(100% 0 0);
+  --color-card-foreground: oklch(18% 0.04 260);
+  --color-primary:     oklch(18% 0.04 260);
+  --color-primary-foreground: oklch(98% 0.005 85);
+  --color-secondary:   oklch(78% 0.13 85);
+  --color-secondary-foreground: oklch(18% 0.04 260);
+  --color-muted:       oklch(94% 0.01 260);
+  --color-muted-foreground: oklch(50% 0.03 260);
+  --color-accent:      oklch(78% 0.13 85);
+  --color-accent-foreground: oklch(18% 0.04 260);
+  --color-border:      oklch(88% 0.01 260);
+  --color-input:       oklch(88% 0.01 260);
+  --color-ring:        oklch(78% 0.13 85);
+  --color-destructive: oklch(52% 0.22 25);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-display: 'Montserrat', 'Inter', sans-serif;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--color-smoke); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-gold);
+    border-radius: 3px;
+  }
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────── */
+@layer utilities {
+  .font-serif { font-family: var(--font-serif); }
+  .font-display { font-family: var(--font-display); }
+
+  /* Gold gradient text */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, var(--color-gold-dark) 0%, var(--color-gold) 50%, var(--color-gold-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Navy gradient text */
+  .text-gradient-navy {
+    background: linear-gradient(135deg, var(--color-navy) 0%, oklch(35% 0.08 260) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gold divider */
+  .divider-gold {
+    width: 4rem;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold), transparent);
+    border-radius: 2px;
+  }
+
+  /* Glass card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Premium shadow */
+  .shadow-premium {
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.04),
+      0 4px 12px rgba(0,0,0,0.06),
+      0 16px 40px rgba(0,0,0,0.08);
+  }
+
+  .shadow-gold {
+    box-shadow: 0 8px 32px rgba(180, 140, 60, 0.2);
+  }
+
+  /* Animated underline */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-gold);
+    transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .link-underline:hover::after { width: 100%; }
+
+  /* Section padding */
+  .section-padding {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+  @media (min-width: 768px) {
+    .section-padding {
+      padding-top: 7rem;
+      padding-bottom: 7rem;
+    }
+  }
+}
+
+/* ─── Container ─────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.animate-fade-in {
+  animation: fadeIn 0.6s ease both;
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* ─── Scroll Reveal ─────────────────────────────────────────────────── */
+/* État initial : éléments invisibles, prêts à être animés */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+              transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.reveal.reveal-left {
+  transform: translateX(-40px);
+}
+.reveal.reveal-right {
+  transform: translateX(40px);
+}
+.reveal.reveal-scale {
+  transform: scale(0.95) translateY(20px);
+}
+.reveal.reveal-fade {
+  transform: none;
+}
+
+/* État visible : déclenché par JS quand l'élément entre dans le viewport */
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+}
+
+/* Délais de cascade pour les enfants */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

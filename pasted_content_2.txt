@@ -1,0 +1,227 @@
+Thunderfam Group Limited – Web Application Development Requirements
+
+Create a modern web application for Thunderfam Group Limited UK, headquartered in the United Kingdom, with its subsidiary Thunderfam Group Limited Côte d'Ivoire operating in Côte d'Ivoire.
+
+Technology Requirements
+
+Use the most appropriate modern technology stack for this type of business application. The application must be:
+
+Fully responsive and mobile-friendly
+Fast, scalable, and secure
+Optimized for desktop, tablet, and mobile devices
+Built using modern web development best practices
+Design Requirements
+Theme
+
+The application should use a Metallic Black theme with:
+
+Metallic black background
+White text
+Modern glassmorphism and premium business styling
+Smooth animations and transitions
+Color Palette
+
+Use the official Google Brand Colors for menus, section titles, categories, buttons, icons, and highlights:
+
+Google Blue: #4285F4
+Google Red: #EA4335
+Google Yellow: #FBBC05
+Google Green: #34A853
+Multi-Language Support
+
+The application must support:
+
+French (Default Language)
+English
+Spanish
+
+All content, menus, forms, notifications, and user interfaces must be translatable.
+
+Homepage (Landing Page)
+
+The homepage must professionally present Thunderfam Group Limited UK and Thunderfam Group Limited Côte d'Ivoire and showcase all company services with high-quality illustrations and images related to each service.
+
+Company Services
+Information Technology Services
+IT Consulting
+Software Development
+Web Applications
+Websites
+Mobile Applications
+System Installation
+System Maintenance
+AI Training
+AI Automation
+AI Agents
+Cloud Solutions
+Creative & Digital Services
+Logo Design
+Flyer Design
+Business Card Design
+Marketing Materials
+Video Animation
+Video Advertising
+Video Marketing
+Import & Export
+Import and Export of Goods and Products
+Financial Services
+Mobile Money Transfers
+Orange Money
+MTN Money
+Moov Money
+Wave
+Djamo
+Real Estate Services
+Land Sales
+Property Sales
+Property Management
+Real Estate Development
+Construction & Public Works
+Building Construction
+Public Works Projects
+Infrastructure Development
+Property Maintenance
+Security Services
+Security Agency Services
+Security Personnel Management
+Hospitality Services
+Hotels
+Restaurants
+Catering Services
+Education & Training
+Professional Training
+Educational Programs
+Corporate Training
+Agriculture & Livestock
+Agricultural Farming
+Livestock Farming
+Agro-Pastoral Projects
+Transport & Logistics
+Road Transport
+Logistics Services
+Commercial Representation
+Business Representation
+Commercial Intermediation
+Business Brokerage
+User Registration & Authentication
+
+Users must be able to create an account using:
+
+Google Login
+Facebook Login
+Apple Login
+Email & Password
+Client Portal
+
+After registration, clients can:
+
+Service Selection
+Browse available services
+Select desired services
+Choose service options and features
+Select design preferences
+Choose color themes
+Instant Pricing System
+
+The system should dynamically calculate prices based on selected services and options.
+
+Payment System
+
+Support multiple payment methods:
+
+International Payments
+Stripe
+Credit Cards
+Debit Cards
+African Mobile Money Payments
+Orange Money
+MTN Mobile Money
+Moov Money
+Wave
+Djamo
+Payment Options
+
+Users can choose:
+
+Full Payment
+Pay 100% upfront
+Installment Payment
+Pay in 3 monthly installments
+Total project cost divided into 3 equal payments
+Automated payment reminders
+Project Management System
+
+Clients must be able to track project progress in real time.
+
+Features
+Project Dashboard
+View active projects
+View completed projects
+Project progress indicators
+Milestone tracking
+Notifications
+
+Clients receive notifications when:
+
+Project status changes
+Tasks are completed
+New documents are uploaded
+Additional information is required
+Payments are due
+Project Collaboration
+
+Clients and administrators can:
+
+View project details
+Submit new task requests
+Review project manager recommendations
+Approve or reject recommendations
+Approve completed tasks
+Leave comments and feedback
+Document Management System
+
+Clients and administrators can upload, download, and manage project files.
+
+Supported File Types
+PNG
+JPG
+JPEG
+SVG
+PDF
+Word Documents
+Excel Files
+CSV
+XML
+Admin Portal
+
+Administrators must be able to:
+
+Manage users
+Manage projects
+Manage payments
+Manage services
+Manage invoices
+Manage notifications
+Manage multilingual content
+Assign project managers
+Track project performance
+Generate reports and analytics
+Additional Features
+CRM (Customer Relationship Management)
+AI-powered project recommendations
+Live chat support
+Ticketing system
+Email notifications
+SMS notifications
+Mobile push notifications
+Invoice generation
+Quote generation
+Customer review system
+SEO optimization
+Analytics dashboard
+Role-based access control
+Audit logs
+Secure document storage
+Goal
+
+The objective is to create a professional all-in-one digital services platform where clients can purchase services, manage projects, communicate with project managers, make payments, upload documents, and monitor project progress from a single dashboard.
