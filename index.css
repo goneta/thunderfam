@@ -1,11 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
+
+@source "./*.tsx";
+@source "./components/**/*.tsx";
+@source "./pages/**/*.tsx";
+@source "./hooks/**/*.ts";
+@source "./lib/**/*.ts";
+@source "./_core/**/*.ts";
 
 @custom-variant dark (&:is(.dark *));
 
 /* ─── Google Fonts ─────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
-
 /* ─── Design Tokens ─────────────────────────────────────────────────── */
 @theme inline {
   --radius-sm: 0.25rem;

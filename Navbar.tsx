@@ -5,6 +5,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
 import { getLoginUrl } from "@/const";
+import logoUrl from "./thunderfam_logo_dark.jpg";
 
 export default function Navbar() {
   const { t } = useTranslation();
@@ -62,7 +63,7 @@ export default function Navbar() {
             aria-label="Thunderfam Group Limited – Accueil"
           >
             <img
-              src="/manus-storage/thunderfam_logo_dark_e8f49927.jpg"
+              src={logoUrl}
               alt="Thunderfam Group Limited"
               className="h-11 w-auto object-contain block"
               style={{ maxWidth: "185px" }}

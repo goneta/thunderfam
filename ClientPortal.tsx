@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import logoUrl from "./thunderfam_logo_dark.jpg";
 
 // ─── Status helpers ───────────────────────────────────────────────
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -78,7 +79,7 @@ function Sidebar({
       {/* Logo */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/8">
         <img
-          src="/manus-storage/thunderfam_logo_dark_e8f49927.jpg"
+          src={logoUrl}
           alt="Thunderfam"
           className="h-8 w-auto object-contain"
         />
