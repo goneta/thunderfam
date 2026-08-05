@@ -36,6 +36,16 @@
     "schema.ts",
     "services.ts",
     "ticketsRouter.ts",
-    "pdfGenerator.ts"
+    "pdfGenerator.ts",
+    "authService.ts",
+    "authRouter.ts",
+    "quotesRouter.ts",
+    "invoicesRouter.ts",
+    "documentNumbering.ts",
+    "documentPdf.ts",
+    "documentWord.ts",
+    "documentExcel.ts",
+    "emailService.ts",
+    "qrService.ts"
   ]
 }

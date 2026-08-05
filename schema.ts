@@ -16,6 +16,9 @@ import {
 // ─────────────────────────────────────────────
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
+  // Identifiant du fournisseur d'identité. Pour un compte créé par
+  // mot de passe (auth intégrée), on stocke "local:<uuid>" afin de
+  // conserver la contrainte NOT NULL UNIQUE existante.
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -24,6 +27,16 @@ export const users = mysqlTable("users", {
   phone: varchar("phone", { length: 32 }),
   country: varchar("country", { length: 64 }),
   isActive: boolean("isActive").default(true).notNull(),
+
+  // ── Authentification intégrée (mot de passe) ──
+  // Hash bcrypt. NULL pour les comptes créés via un fournisseur externe.
+  passwordHash: varchar("passwordHash", { length: 255 }),
+  emailVerified: boolean("emailVerified").default(false).notNull(),
+
+  // Verrouillage après échecs répétés (défense contre le bourrinage)
+  failedLoginAttempts: int("failedLoginAttempts").default(0).notNull(),
+  lockedUntil: timestamp("lockedUntil"),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -31,6 +44,65 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+// ─────────────────────────────────────────────
+// AUTHENTIFICATION — sessions, jetons, audit
+// ─────────────────────────────────────────────
+
+/**
+ * Sessions actives. On ne stocke que le HASH du refresh token :
+ * une fuite de la base ne permet donc pas de rejouer les sessions.
+ * L'access token, lui, est un JWT court (15 min) non persisté.
+ */
+export const authSessions = mysqlTable("auth_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  refreshTokenHash: varchar("refreshTokenHash", { length: 128 }).notNull().unique(),
+  userAgent: varchar("userAgent", { length: 512 }),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  expiresAt: timestamp("expiresAt").notNull(),
+  revokedAt: timestamp("revokedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuthSession = typeof authSessions.$inferSelect;
+
+/** Jetons à usage unique : réinitialisation de mot de passe et vérification d'e-mail. */
+export const authTokens = mysqlTable("auth_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
+  purpose: mysqlEnum("purpose", ["password_reset", "email_verification"]).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuthToken = typeof authTokens.$inferSelect;
+
+/** Journal d'audit des événements d'authentification. */
+export const authAuditLog = mysqlTable("auth_audit_log", {
+  id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+  userId: int("userId"),
+  email: varchar("email", { length: 320 }),
+  event: mysqlEnum("event", [
+    "login_success",
+    "login_failed",
+    "logout",
+    "register",
+    "password_reset_requested",
+    "password_reset_completed",
+    "email_verified",
+    "account_locked",
+    "permission_denied",
+  ]).notNull(),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  userAgent: varchar("userAgent", { length: 512 }),
+  detail: text("detail"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuthAuditLog = typeof authAuditLog.$inferSelect;
 
 // ─────────────────────────────────────────────
 // SERVICES CATALOGUE
@@ -63,20 +135,73 @@ export const quotes = mysqlTable("quotes", {
   serviceId: int("serviceId"),
   title: varchar("title", { length: 256 }).notNull(),
   description: text("description"),
-  items: json("items"), // [{name, qty, unitPrice, total}]
+  items: json("items"), // QuoteLineItem[] — voir shared/documents.ts
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   tax: decimal("tax", { precision: 10, scale: 2 }).default("0"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 8 }).default("EUR"),
-  status: mysqlEnum("status", ["draft", "sent", "accepted", "rejected", "expired"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "sent", "accepted", "rejected", "expired", "paid"]).default("draft").notNull(),
   validUntil: timestamp("validUntil"),
   notes: text("notes"),
+
+  // ── Coordonnées client figées à l'émission ──
+  // Le devis ne doit pas changer si la fiche client est modifiée plus tard.
+  clientName: varchar("clientName", { length: 256 }),
+  clientAddress: text("clientAddress"),
+  clientEmail: varchar("clientEmail", { length: 320 }),
+
+  // ── Remise globale et montant en toutes lettres ──
+  discountTotal: decimal("discountTotal", { precision: 10, scale: 2 }).default("0"),
+  amountInWords: text("amountInWords"),
+
+  // ── Signature électronique (images PNG en base64) ──
+  clientSignature: text("clientSignature"),
+  managerSignature: text("managerSignature"),
+  companyStamp: text("companyStamp"),
+  signedAt: timestamp("signedAt"),
+
+  // ── Traçabilité de facturation ──
+  paidAt: timestamp("paidAt"),
+  generatedInvoiceId: int("generatedInvoiceId"),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type Quote = typeof quotes.$inferSelect;
 export type InsertQuote = typeof quotes.$inferInsert;
+
+// ─────────────────────────────────────────────
+// COMPTEURS DE NUMÉROTATION (atomique)
+// ─────────────────────────────────────────────
+// Une ligne par (préfixe, année). L'incrément se fait via une requête
+// atomique UPDATE ... puis SELECT dans la même transaction, ce qui
+// garantit l'unicité même en cas de créations simultanées.
+export const documentCounters = mysqlTable("document_counters", {
+  id: int("id").autoincrement().primaryKey(),
+  prefix: varchar("prefix", { length: 32 }).notNull(), // 'DEV-TGL-CI' | 'FAC-TGL-CI'
+  year: int("year").notNull(),
+  counter: int("counter").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DocumentCounter = typeof documentCounters.$inferSelect;
+
+// ─────────────────────────────────────────────
+// SIGNATURES ENREGISTRÉES (réutilisables)
+// ─────────────────────────────────────────────
+export const savedSignatures = mysqlTable("saved_signatures", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  label: varchar("label", { length: 128 }).notNull(),
+  imageBase64: text("imageBase64").notNull(),
+  type: mysqlEnum("type", ["signature", "stamp"]).default("signature").notNull(),
+  isDefault: boolean("isDefault").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SavedSignature = typeof savedSignatures.$inferSelect;
+export type InsertSavedSignature = typeof savedSignatures.$inferInsert;
 
 // ─────────────────────────────────────────────
 // PROJECTS
@@ -179,6 +304,28 @@ export const invoices = mysqlTable("invoices", {
   dueDate: timestamp("dueDate"),
   paidAt: timestamp("paidAt"),
   notes: text("notes"),
+
+  // ── Coordonnées client figées (reprises du devis d'origine) ──
+  clientName: varchar("clientName", { length: 256 }),
+  clientAddress: text("clientAddress"),
+  clientEmail: varchar("clientEmail", { length: 320 }),
+
+  discountTotal: decimal("discountTotal", { precision: 10, scale: 2 }).default("0"),
+  amountInWords: text("amountInWords"),
+
+  // ── Signatures reprises du devis ──
+  clientSignature: text("clientSignature"),
+  managerSignature: text("managerSignature"),
+  companyStamp: text("companyStamp"),
+
+  // ── Suivi comptable (paiements partiels, relances, échéances) ──
+  amountPaid: decimal("amountPaid", { precision: 10, scale: 2 }).default("0"),
+  paymentStatus: mysqlEnum("paymentStatus", ["pending", "partial", "paid", "overdue", "cancelled"])
+    .default("pending")
+    .notNull(),
+  lastReminderAt: timestamp("lastReminderAt"),
+  reminderCount: int("reminderCount").default(0).notNull(),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
