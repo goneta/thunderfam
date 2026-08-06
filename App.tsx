@@ -11,6 +11,10 @@ import AdminPortal from "./pages/AdminPortal";
 import QuotesPage from "./pages/QuotesPage";
 import QuoteEditor from "./pages/QuoteEditor";
 import InvoicesPage from "./pages/InvoicesPage";
+import InvoiceDetail from "./pages/InvoiceDetail";
+import LoginPage from "./pages/LoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 function Router() {
   return (
@@ -19,11 +23,21 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/portal" component={ClientPortal} />
       <Route path="/admin" component={AdminPortal} />
-      {/* Module de gestion documentaire — devis et factures */}
+
+      {/* Authentification par mot de passe. Les deux dernières URL
+          doivent rester identiques aux liens construits dans
+          authEmails.ts, sinon les e-mails mènent à une 404. */}
+      <Route path="/connexion" component={LoginPage} />
+      <Route path="/auth/reinitialiser" component={ResetPasswordPage} />
+      <Route path="/auth/verifier-email" component={VerifyEmailPage} />
+
+      {/* Module documentaire — devis et factures */}
       <Route path="/devis" component={QuotesPage} />
       <Route path="/devis/nouveau" component={QuoteEditor} />
       <Route path="/devis/:id" component={QuoteEditor} />
       <Route path="/factures" component={InvoicesPage} />
+      <Route path="/factures/:id" component={InvoiceDetail} />
+
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
