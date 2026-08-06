@@ -47,6 +47,8 @@
     "documentExcel.ts",
     "emailService.ts",
     "qrService.ts",
-    "rbac.ts"
+    "rbac.ts",
+    "authEmails.ts",
+    "invoicesRouter.ts"
   ]
 }

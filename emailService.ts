@@ -117,3 +117,25 @@ export async function sendDocumentEmail(o: SendDocumentOptions): Promise<{ messa
 
   return { messageId: info.messageId };
 }
+
+/**
+ * Envoi générique, réutilisé par les e-mails d'authentification
+ * (réinitialisation de mot de passe, vérification d'adresse) afin de
+ * ne pas dupliquer la configuration du transport.
+ */
+export async function sendMail(o: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<{ messageId: string }> {
+  const tx = getTransporter();
+  const info = await tx.sendMail({
+    from: process.env.SMTP_FROM || `${COMPANY_INFO.name} <no-reply@thunderfam.com>`,
+    to: o.to,
+    subject: o.subject,
+    html: o.html,
+  });
+  return { messageId: info.messageId };
+}
+
+export { escapeHtml };
