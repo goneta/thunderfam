@@ -46,6 +46,7 @@
     "documentWord.ts",
     "documentExcel.ts",
     "emailService.ts",
-    "qrService.ts"
+    "qrService.ts",
+    "rbac.ts"
   ]
 }

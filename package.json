@@ -22,6 +22,7 @@
     "jsonwebtoken": "^9.0.3",
     "jsqr": "^1.4.0",
     "lucide-react": "^0.468.0",
+    "mysql2": "^3.23.2",
     "nodemailer": "^9.0.4",
     "pdfkit": "^0.19.1",
     "pngjs": "^7.0.0",
