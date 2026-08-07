@@ -25,18 +25,22 @@ commerciaux de Thunderfam Group Limited Côte d'Ivoire (TGL-CI).
 
 **Ce qui reste à faire avant la production :**
 
-- **Câblage des routeurs** : `quotesRouter` et `invoicesRouter` doivent
-  être montés dans `routers.ts` côté Manus (voir §6). Ils ne le sont
-  pas encore dans ce dépôt car `_core/trpc` et `db` n'y figurent pas.
-- **Migration de base** : les nouvelles colonnes et tables doivent être
-  appliquées (voir §5). Aucune migration n'a été exécutée sur votre
-  base de production.
-- **Authentification** : `authService.ts` est écrit et testé, mais
-  aucun `authRouter` ne l'expose encore. Les procédures d'inscription,
-  connexion, rafraîchissement et réinitialisation restent à brancher.
-- **Vérification e-mail et réinitialisation de mot de passe** : la
-  mécanique de jetons existe (`issueToken` / `consumeToken`), l'envoi
-  des e-mails correspondants reste à écrire.
+- ~~Câblage des routeurs~~ — **fait** : `quotes`, `invoices` et
+  `authLocal` sont montés dans `routers.ts`. `authLocal` est
+  volontairement distinct de `auth`, réservé à l'OAuth existant :
+  les deux méthodes de connexion coexistent.
+- **Migration de base** : `db/migrations/001_devis_factures.sql` est
+  prête et testée (exécutée deux fois sur une réplique du schéma, sans
+  perte de données), mais **n'a pas été appliquée sur votre base**.
+  Rien ne fonctionnera avant. Sauvegardez d'abord.
+- ~~Authentification~~ — **fait** : `authRouter.ts` expose 9
+  procédures (inscription, connexion, rafraîchissement, déconnexion,
+  mot de passe oublié, réinitialisation, vérification d'e-mail, renvoi
+  de vérification, changement de mot de passe), avec les écrans
+  correspondants (`/connexion`, `/auth/reinitialiser`,
+  `/auth/verifier-email`).
+- ~~Vérification e-mail et réinitialisation~~ — **fait** :
+  `authEmails.ts` envoie les trois messages, testés par capture SMTP.
 - **Variables d'environnement** : `JWT_SECRET` et la configuration SMTP
   doivent être renseignées, sinon l'authentification et l'envoi
   d'e-mail refusent de démarrer (volontairement — voir §4).

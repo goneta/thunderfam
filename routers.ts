@@ -9,6 +9,9 @@ import { documentsRouter } from "./routers/documentsRouter";
 import { ticketsRouter } from "./routers/ticketsRouter";
 import { paymentsRouter } from "./routers/paymentsRouter";
 import { adminRouter } from "./routers/adminRouter";
+import { quotesRouter } from "./routers/quotesRouter";
+import { invoicesRouter } from "./routers/invoicesRouter";
+import { authRouter } from "./routers/authRouter";
 import { z } from "zod/v4";
 import { notifyOwner } from "./_core/notification";
 
@@ -24,6 +27,11 @@ export const appRouter = router({
     }),
   }),
 
+  // Authentification par mot de passe, montée SÉPARÉMENT de `auth`
+  // afin de ne pas interférer avec l'OAuth existant : les deux
+  // méthodes de connexion coexistent.
+  authLocal: authRouter,
+
   projects: projectsRouter,
   services: servicesRouter,
   notifications: notificationsRouter,
@@ -31,6 +39,10 @@ export const appRouter = router({
   tickets: ticketsRouter,
   payments: paymentsRouter,
   admin: adminRouter,
+
+  // Module documentaire — devis et factures
+  quotes: quotesRouter,
+  invoices: invoicesRouter,
 
   contact: router({
     send: publicProcedure
