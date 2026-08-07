@@ -114,7 +114,7 @@ export const services = mysqlTable("services", {
   descriptionFr: text("descriptionFr"),
   descriptionEn: text("descriptionEn"),
   descriptionEs: text("descriptionEs"),
-  basePrice: decimal("basePrice", { precision: 10, scale: 2 }),
+  basePrice: decimal("basePrice", { precision: 18, scale: 2 }),
   currency: varchar("currency", { length: 8 }).default("EUR"),
   isActive: boolean("isActive").default(true).notNull(),
   sortOrder: int("sortOrder").default(0),
@@ -136,9 +136,9 @@ export const quotes = mysqlTable("quotes", {
   title: varchar("title", { length: 256 }).notNull(),
   description: text("description"),
   items: json("items"), // QuoteLineItem[] — voir shared/documents.ts
-  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
-  tax: decimal("tax", { precision: 10, scale: 2 }).default("0"),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  subtotal: decimal("subtotal", { precision: 18, scale: 2 }).notNull(),
+  tax: decimal("tax", { precision: 18, scale: 2 }).default("0"),
+  total: decimal("total", { precision: 18, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 8 }).default("EUR"),
   status: mysqlEnum("status", ["draft", "sent", "accepted", "rejected", "expired", "paid"]).default("draft").notNull(),
   validUntil: timestamp("validUntil"),
@@ -151,7 +151,7 @@ export const quotes = mysqlTable("quotes", {
   clientEmail: varchar("clientEmail", { length: 320 }),
 
   // ── Remise globale et montant en toutes lettres ──
-  discountTotal: decimal("discountTotal", { precision: 10, scale: 2 }).default("0"),
+  discountTotal: decimal("discountTotal", { precision: 18, scale: 2 }).default("0"),
   amountInWords: text("amountInWords"),
 
   // ── Signature électronique (images PNG en base64) ──
@@ -221,7 +221,7 @@ export const projects = mysqlTable("projects", {
   startDate: timestamp("startDate"),
   dueDate: timestamp("dueDate"),
   completedAt: timestamp("completedAt"),
-  budget: decimal("budget", { precision: 10, scale: 2 }),
+  budget: decimal("budget", { precision: 18, scale: 2 }),
   currency: varchar("currency", { length: 8 }).default("EUR"),
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -296,9 +296,9 @@ export const invoices = mysqlTable("invoices", {
   quoteId: int("quoteId"),
   title: varchar("title", { length: 256 }).notNull(),
   items: json("items"), // [{name, qty, unitPrice, total}]
-  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
-  tax: decimal("tax", { precision: 10, scale: 2 }).default("0"),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  subtotal: decimal("subtotal", { precision: 18, scale: 2 }).notNull(),
+  tax: decimal("tax", { precision: 18, scale: 2 }).default("0"),
+  total: decimal("total", { precision: 18, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 8 }).default("EUR"),
   status: mysqlEnum("status", ["draft", "sent", "paid", "overdue", "cancelled"]).default("draft").notNull(),
   dueDate: timestamp("dueDate"),
@@ -310,7 +310,7 @@ export const invoices = mysqlTable("invoices", {
   clientAddress: text("clientAddress"),
   clientEmail: varchar("clientEmail", { length: 320 }),
 
-  discountTotal: decimal("discountTotal", { precision: 10, scale: 2 }).default("0"),
+  discountTotal: decimal("discountTotal", { precision: 18, scale: 2 }).default("0"),
   amountInWords: text("amountInWords"),
 
   // ── Signatures reprises du devis ──
@@ -319,7 +319,7 @@ export const invoices = mysqlTable("invoices", {
   companyStamp: text("companyStamp"),
 
   // ── Suivi comptable (paiements partiels, relances, échéances) ──
-  amountPaid: decimal("amountPaid", { precision: 10, scale: 2 }).default("0"),
+  amountPaid: decimal("amountPaid", { precision: 18, scale: 2 }).default("0"),
   paymentStatus: mysqlEnum("paymentStatus", ["pending", "partial", "paid", "overdue", "cancelled"])
     .default("pending")
     .notNull(),
@@ -341,7 +341,7 @@ export const payments = mysqlTable("payments", {
   invoiceId: int("invoiceId"),
   userId: int("userId").notNull(),
   projectId: int("projectId"),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  amount: decimal("amount", { precision: 18, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 8 }).default("EUR"),
   method: mysqlEnum("method", ["stripe", "orange_money", "mtn_money", "moov_money", "wave", "djamo", "bank_transfer"]).notNull(),
   type: mysqlEnum("type", ["full", "installment"]).default("full").notNull(),

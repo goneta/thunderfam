@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Menu, X, ShieldCheck, User } from "lucide-react";
+import { Menu, X, ShieldCheck, User, FileText, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
 import { getLoginUrl } from "@/const";
 import logoUrl from "./thunderfam_logo_dark.jpg";
+import { hasPermission, type Role } from "@shared/permissions";
 
 export default function Navbar() {
   const { t } = useTranslation();
@@ -13,6 +14,14 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("accueil");
+
+  // On réutilise la matrice RBAC partagée plutôt que de tester le rôle
+  // à la main : afficher un lien que le serveur refusera ensuite serait
+  // une incohérence entre ce qu'on montre et ce qui est permis.
+  const canManageDocuments = hasPermission(
+    (user?.role ?? null) as Role | null,
+    "quotes:create"
+  );
 
   const navLinks = [
     { labelKey: "nav.home", href: "#accueil", id: "accueil" },
@@ -116,6 +125,26 @@ export default function Navbar() {
                   <User size={13} />
                   Mon espace
                 </Link>
+                {canManageDocuments && (
+                  <>
+                    <Link
+                      href="/devis"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl text-white transition-all duration-200 hover:scale-105 active:scale-95"
+                      style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)" }}
+                    >
+                      <FileText size={13} />
+                      Devis
+                    </Link>
+                    <Link
+                      href="/factures"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl text-white transition-all duration-200 hover:scale-105 active:scale-95"
+                      style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)" }}
+                    >
+                      <Receipt size={13} />
+                      Factures
+                    </Link>
+                  </>
+                )}
                 {(user?.role === "admin" || user?.role === "manager") && (
                   <Link
                     href="/admin"
@@ -205,6 +234,24 @@ export default function Navbar() {
               >
                 <User size={14} /> Mon espace client
               </Link>
+              {canManageDocuments && (
+                <>
+                  <Link
+                    href="/devis"
+                    className="flex items-center gap-2 text-left px-4 py-3 text-sm font-medium rounded-xl text-white/70 hover:text-white transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FileText size={14} /> Devis
+                  </Link>
+                  <Link
+                    href="/factures"
+                    className="flex items-center gap-2 text-left px-4 py-3 text-sm font-medium rounded-xl text-white/70 hover:text-white transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Receipt size={14} /> Factures
+                  </Link>
+                </>
+              )}
               {(user?.role === "admin" || user?.role === "manager") && (
                 <Link
                   href="/admin"

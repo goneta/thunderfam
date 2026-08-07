@@ -49,6 +49,8 @@
     "qrService.ts",
     "rbac.ts",
     "authEmails.ts",
-    "invoicesRouter.ts"
+    "invoicesRouter.ts",
+    "tests",
+    ".sandbox-test"
   ]
 }

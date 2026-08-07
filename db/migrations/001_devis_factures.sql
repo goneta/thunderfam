@@ -33,12 +33,33 @@ END //
 DELIMITER ;
 
 -- ------------------------------------------------------------
+-- 0. ÉLARGISSEMENT DES COLONNES MONÉTAIRES
+--
+-- Le schéma d'origine utilisait DECIMAL(10,2), qui plafonne à
+-- 99 999 999,99. C'est suffisant en euros, mais pas en FCFA : un
+-- devis de transport de 878 000 000 FCFA est rejeté par MySQL avec
+-- « Out of range value ». DECIMAL(18,2) porte la limite à environ
+-- 10 000 milliards, ce qui couvre largement l'usage.
+--
+-- Élargir une colonne DECIMAL ne perd aucune donnée existante.
+-- ------------------------------------------------------------
+ALTER TABLE quotes
+  MODIFY COLUMN subtotal DECIMAL(18,2) NOT NULL,
+  MODIFY COLUMN tax      DECIMAL(18,2) DEFAULT 0,
+  MODIFY COLUMN total    DECIMAL(18,2) NOT NULL;
+
+ALTER TABLE invoices
+  MODIFY COLUMN subtotal DECIMAL(18,2) NULL,
+  MODIFY COLUMN tax      DECIMAL(18,2) NULL,
+  MODIFY COLUMN total    DECIMAL(18,2) NULL;
+
+-- ------------------------------------------------------------
 -- 1. DEVIS (quotes)
 -- ------------------------------------------------------------
 CALL add_column_if_missing('quotes', 'clientName',        'VARCHAR(256) NULL');
 CALL add_column_if_missing('quotes', 'clientAddress',     'TEXT NULL');
 CALL add_column_if_missing('quotes', 'clientEmail',       'VARCHAR(320) NULL');
-CALL add_column_if_missing('quotes', 'discountTotal',     'DECIMAL(10,2) NOT NULL DEFAULT 0');
+CALL add_column_if_missing('quotes', 'discountTotal',     'DECIMAL(18,2) NOT NULL DEFAULT 0');
 CALL add_column_if_missing('quotes', 'amountInWords',     'TEXT NULL');
 CALL add_column_if_missing('quotes', 'clientSignature',   'TEXT NULL');
 CALL add_column_if_missing('quotes', 'managerSignature',  'TEXT NULL');
@@ -58,12 +79,12 @@ ALTER TABLE quotes
 CALL add_column_if_missing('invoices', 'clientName',       'VARCHAR(256) NULL');
 CALL add_column_if_missing('invoices', 'clientAddress',    'TEXT NULL');
 CALL add_column_if_missing('invoices', 'clientEmail',      'VARCHAR(320) NULL');
-CALL add_column_if_missing('invoices', 'discountTotal',    'DECIMAL(10,2) NOT NULL DEFAULT 0');
+CALL add_column_if_missing('invoices', 'discountTotal',    'DECIMAL(18,2) NOT NULL DEFAULT 0');
 CALL add_column_if_missing('invoices', 'amountInWords',    'TEXT NULL');
 CALL add_column_if_missing('invoices', 'clientSignature',  'TEXT NULL');
 CALL add_column_if_missing('invoices', 'managerSignature', 'TEXT NULL');
 CALL add_column_if_missing('invoices', 'companyStamp',     'TEXT NULL');
-CALL add_column_if_missing('invoices', 'amountPaid',       'DECIMAL(10,2) NOT NULL DEFAULT 0');
+CALL add_column_if_missing('invoices', 'amountPaid',       'DECIMAL(18,2) NOT NULL DEFAULT 0');
 CALL add_column_if_missing('invoices', 'paymentStatus',
   "ENUM('pending','partial','paid','overdue','cancelled') NOT NULL DEFAULT 'pending'");
 CALL add_column_if_missing('invoices', 'lastReminderAt',   'TIMESTAMP NULL');

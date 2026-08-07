@@ -1,6 +1,5 @@
 import { getDb } from "../db";
-import { documentCounters } from "../../drizzle/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { QUOTE_PREFIX, INVOICE_PREFIX } from "@shared/documents";
 
 // ============================================================
@@ -25,41 +24,43 @@ async function nextSequence(prefix: string, year: number): Promise<number> {
   if (!db) throw new Error("Base de données indisponible");
 
   // Crée la ligne du compteur si elle n'existe pas encore (première
-  // émission de l'année). Sans effet si elle existe déjà.
-  await db
-    .insert(documentCounters)
-    .values({ prefix, year, counter: 0 })
-    .onDuplicateKeyUpdate({ set: { prefix: sql`prefix` } })
-    .catch(async () => {
-      // Certaines versions ne supportent pas onDuplicateKeyUpdate sans
-      // index unique : on retombe sur une vérification explicite.
-      const existing = await db
-        .select()
-        .from(documentCounters)
-        .where(and(eq(documentCounters.prefix, prefix), eq(documentCounters.year, year)))
-        .limit(1);
-      if (existing.length === 0) {
-        await db.insert(documentCounters).values({ prefix, year, counter: 0 });
-      }
-    });
-
-  // Incrément atomique : LAST_INSERT_ID(expr) mémorise la nouvelle
-  // valeur pour CETTE connexion uniquement.
+  // émission de l'année). INSERT IGNORE s'appuie sur l'index unique
+  // (prefix, year) : sans effet si la ligne existe déjà.
   await db.execute(
-    sql`UPDATE document_counters
-        SET counter = LAST_INSERT_ID(counter + 1)
-        WHERE prefix = ${prefix} AND year = ${year}`
+    sql`INSERT IGNORE INTO document_counters (prefix, year, counter)
+        VALUES (${prefix}, ${year}, 0)`
   );
 
-  const result: any = await db.execute(sql`SELECT LAST_INSERT_ID() AS seq`);
-  // Le driver mysql2 renvoie [rows, fields] ; drizzle peut renvoyer rows directement.
-  const rows = Array.isArray(result) ? result[0] : result;
-  const seq = Number(rows?.[0]?.seq ?? rows?.seq);
+  // L'incrément DOIT être atomique de bout en bout.
+  //
+  // Une première version faisait UPDATE ... LAST_INSERT_ID(counter+1)
+  // puis SELECT LAST_INSERT_ID(). C'est correct tant que chaque appel
+  // dispose de sa propre connexion, mais faux dès que l'application
+  // partage une connexion unique : les deux requêtes de deux appels
+  // concurrents s'entrelacent et renvoient le même numéro, ce qui
+  // provoque une violation de clé unique. Un test de charge l'a
+  // effectivement reproduit.
+  //
+  // La transaction avec SELECT ... FOR UPDATE verrouille la ligne du
+  // compteur jusqu'au COMMIT : le second appel attend, quel que soit
+  // le mode de connexion.
+  return db.transaction(async (tx: any) => {
+    const locked: any = await tx.execute(
+      sql`SELECT counter FROM document_counters
+          WHERE prefix = ${prefix} AND year = ${year}
+          FOR UPDATE`
+    );
+    const rows = Array.isArray(locked) ? locked[0] : locked;
+    const current = Number(rows?.[0]?.counter ?? rows?.counter ?? 0);
+    const next = current + 1;
 
-  if (!seq || Number.isNaN(seq)) {
-    throw new Error("Impossible de générer le numéro de document");
-  }
-  return seq;
+    await tx.execute(
+      sql`UPDATE document_counters SET counter = ${next}
+          WHERE prefix = ${prefix} AND year = ${year}`
+    );
+
+    return next;
+  });
 }
 
 function format(prefix: string, year: number, seq: number): string {
