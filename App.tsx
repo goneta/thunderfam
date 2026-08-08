@@ -10,6 +10,7 @@ import ClientPortal from "./pages/ClientPortal";
 import AdminPortal from "./pages/AdminPortal";
 import QuotesPage from "./pages/QuotesPage";
 import QuoteEditor from "./pages/QuoteEditor";
+import QuoteRoute from "./pages/QuoteRoute";
 import InvoicesPage from "./pages/InvoicesPage";
 import InvoiceDetail from "./pages/InvoiceDetail";
 import LoginPage from "./pages/LoginPage";
@@ -34,7 +35,9 @@ function Router() {
       {/* Module documentaire — devis et factures */}
       <Route path="/devis" component={QuotesPage} />
       <Route path="/devis/nouveau" component={QuoteEditor} />
-      <Route path="/devis/:id" component={QuoteEditor} />
+      {/* Éditeur ou vue lecture seule, selon les droits réels
+          de l'utilisateur (voir QuoteRoute). */}
+      <Route path="/devis/:id" component={QuoteRoute} />
       <Route path="/factures" component={InvoicesPage} />
       <Route path="/factures/:id" component={InvoiceDetail} />
 

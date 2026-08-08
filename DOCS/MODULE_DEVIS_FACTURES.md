@@ -22,6 +22,7 @@ commerciaux de Thunderfam Group Limited Côte d'Ivoire (TGL-CI).
 | Excel (.xlsx) | Généré avec ligne de total |
 | E-mail | Réellement envoyé via SMTP, PJ PDF + Word |
 | Pages React | Rendues sans erreur, colonnes vérifiées |
+| **Routeurs tRPC (bout en bout)** | **28 tests d'intégration sur MySQL réel** |
 
 **Ce qui reste à faire avant la production :**
 
@@ -147,11 +148,17 @@ par construction, et une désynchronisation est impossible.
 
 | Rôle | Portée |
 |---|---|
-| `user` | Consulte uniquement **ses** devis et factures |
+| `user` | Consulte uniquement **ses** devis et factures (vue lecture seule) |
 | `manager` | Crée et modifie devis et clients, envoie, signe, convertit en facture |
 | `admin` | Accès complet, administration et journal d'audit |
 
 Un `manager` ne peut ni supprimer un devis ni gérer les utilisateurs.
+
+L'interface s'aligne sur cette matrice : `/devis/:id` affiche
+l'éditeur ou une vue en lecture seule selon `quotes:update`
+(voir `pages/QuoteRoute.tsx`). Ce n'est pas une protection — le
+cloisonnement réel est appliqué par les routeurs — mais une cohérence :
+on ne montre pas une action que le serveur refuserait.
 
 ---
 
@@ -193,6 +200,40 @@ Formats : `DEV-TGL-CI-2026-000001` et `FAC-TGL-CI-2026-000001`, avec
 des séquences **distinctes**.
 
 ---
+
+## 5 bis. Tests d'intégration
+
+```bash
+npm run test:integration
+```
+
+Ces tests appellent les **vraies** procédures via `createCaller`, pas
+une copie de la logique : ils couvrent donc aussi le contrôle d'accès,
+la validation Zod et le recalcul serveur des montants.
+
+Ils s'exécutent dans une arborescence reproduisant celle de Manus
+(`routers/`, `_core/`, `../../drizzle/schema`) et valident donc aussi
+le **placement** des fichiers. La base est recréée depuis le schéma
+d'avant migration, ce qui vérifie au passage que la migration
+s'applique correctement à une base déjà en service.
+
+Deux bugs bloquants ont été trouvés par ces tests, invisibles en
+tests unitaires :
+
+1. **Montants plafonnés à ~100 millions.** Les colonnes étaient en
+   `DECIMAL(10,2)`, soit un maximum de 99 999 999,99. Convenable en
+   euros, rédhibitoire en FCFA : un devis de transport de
+   878 000 000 FCFA était rejeté par MySQL. Corrigé en
+   `DECIMAL(18,2)`.
+2. **Numéros dupliqués sous charge.** L'incrément par
+   `LAST_INSERT_ID(counter+1)` puis `SELECT` n'est atomique que si
+   chaque appel dispose de sa propre connexion. Sur une connexion
+   partagée, deux appels concurrents obtenaient le même numéro.
+   Remplacé par une transaction avec `SELECT ... FOR UPDATE`.
+
+⚠️ **La numérotation suppose un pool de connexions** (le cas en
+production). Sur une connexion unique partagée, les transactions
+concurrentes ne peuvent pas s'isoler.
 
 ## 6. Câblage des routeurs
 

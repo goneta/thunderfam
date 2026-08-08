@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Button } from "../components/ui/button";
 import { formatAmount } from "@shared/documents";
 import { trpc } from "../lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { hasPermission, type Role } from "@shared/permissions";
 
 // ============================================================
 // Page « Gestion des devis ».
@@ -58,6 +60,12 @@ async function fetchDocument(
 }
 
 export default function QuotesPage() {
+  const { user } = useAuth();
+  const role = (user?.role ?? null) as Role | null;
+  // Même matrice que le serveur : on n'affiche pas une action qui
+  // serait ensuite refusée.
+  const canCreate = hasPermission(role, "quotes:create");
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -97,7 +105,9 @@ export default function QuotesPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-navy">Gestion des devis</h1>
+          <h1 className="text-2xl font-bold text-navy">
+            {canCreate ? "Gestion des devis" : "Mes devis"}
+          </h1>
           <p className="text-sm text-gray-500">
             {total} devis — {formatAmount(pageTotal)} FCFA sur cette page
           </p>
@@ -110,7 +120,7 @@ export default function QuotesPage() {
           }}>
             Export Excel
           </Button>
-          <a href="/devis/nouveau"><Button>+ Nouveau devis</Button></a>
+          {canCreate && <a href="/devis/nouveau"><Button>+ Nouveau devis</Button></a>}
         </div>
       </header>
 
@@ -179,9 +189,13 @@ export default function QuotesPage() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-2">
-                      <a href={`/devis/${q.id}`} className="text-gray-600 hover:text-navy">Modifier</a>
+                      <a href={`/devis/${q.id}`} className="text-gray-600 hover:text-navy">
+                        {canCreate ? "Modifier" : "Consulter"}
+                      </a>
                       <button onClick={() => handleExport("pdf", q.id)} className="text-gray-600 hover:text-navy">PDF</button>
-                      <button onClick={() => handleExport("word", q.id)} className="text-gray-600 hover:text-navy">Word</button>
+                      {canCreate && (
+                        <button onClick={() => handleExport("word", q.id)} className="text-gray-600 hover:text-navy">Word</button>
+                      )}
                     </div>
                   </td>
                 </tr>
